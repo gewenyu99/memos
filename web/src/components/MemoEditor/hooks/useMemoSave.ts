@@ -5,6 +5,7 @@ import { useNewMemo } from "@/contexts/NewMemoContext";
 import { memoKeys } from "@/hooks/useMemoQueries";
 import { userKeys } from "@/hooks/useUserQueries";
 import { handleError } from "@/lib/error";
+import posthog from "@/lib/posthog";
 import type { Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import { errorService, memoService, validationService } from "../services";
@@ -83,7 +84,12 @@ export function useMemoSave({
         dispatch(actions.setTimestamps({ createTime: defaultCreateTime, updateTime: defaultCreateTime }));
       }
 
-      if (!memoName && !parentMemoName) {
+      if (parentMemoName) {
+        posthog.capture("memo_comment_created");
+      } else if (memoName) {
+        posthog.capture("memo_updated");
+      } else {
+        posthog.capture("memo_created");
         markNewMemo(result.memoName);
       }
       onConfirm?.(result.memoName);

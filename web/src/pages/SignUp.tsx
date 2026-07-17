@@ -16,6 +16,7 @@ import { useIdentityProviderList } from "@/hooks/useIdentityProviderQueries";
 import useLoading from "@/hooks/useLoading";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import { handleError } from "@/lib/error";
+import posthog from "@/lib/posthog";
 import { ROUTES } from "@/router/routes";
 import { User_Role, UserSchema } from "@/types/proto/api/v1/user_service_pb";
 import { AUTH_REDIRECT_PARAM, appendSearchParams, getSafeRedirectPath } from "@/utils/auth-redirect";
@@ -75,6 +76,7 @@ const SignUp = () => {
       await initAuth();
       // Refetch instance profile to update the initialized status
       await initInstance();
+      posthog.capture("user_signed_up", { authentication_method: "password", is_initial_setup: needsSetup });
       navigateTo(redirectTarget || ROUTES.HOME, { replace: true });
     } catch (error: unknown) {
       handleError(error, toast.error, {

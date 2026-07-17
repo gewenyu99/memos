@@ -12,6 +12,7 @@ import { userServiceClient } from "@/connect";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import useLoading from "@/hooks/useLoading";
 import { handleError } from "@/lib/error";
+import posthog from "@/lib/posthog";
 import { useTranslate } from "@/utils/i18n";
 
 interface Props {
@@ -146,6 +147,7 @@ function CreateWebhookDialog({ open, onOpenChange, webhookName, onSuccess }: Pro
           // Reveal failed — the secret is still set and can be revealed later from the edit dialog.
         }
         requestState.setFinish();
+        posthog.capture("webhook_created");
         if (secret !== undefined) {
           setCreatedSecret(secret);
           return;
@@ -159,6 +161,7 @@ function CreateWebhookDialog({ open, onOpenChange, webhookName, onSuccess }: Pro
         webhook: { name: webhookName, displayName: state.displayName, url: state.url },
         updateMask: create(FieldMaskSchema, { paths: ["display_name", "url"] }),
       });
+      posthog.capture("webhook_updated");
       onSuccess?.();
       onOpenChange(false);
       requestState.setFinish();

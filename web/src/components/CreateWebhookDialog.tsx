@@ -161,10 +161,10 @@ function CreateWebhookDialog({ open, onOpenChange, webhookName, onSuccess }: Pro
         webhook: { name: webhookName, displayName: state.displayName, url: state.url },
         updateMask: create(FieldMaskSchema, { paths: ["display_name", "url"] }),
       });
-      posthog.capture("webhook_updated");
       onSuccess?.();
       onOpenChange(false);
       requestState.setFinish();
+      posthog.capture("webhook_updated");
     } catch (error: unknown) {
       handleError(error, toast.error, {
         context: webhookName ? "Update webhook" : "Create webhook",

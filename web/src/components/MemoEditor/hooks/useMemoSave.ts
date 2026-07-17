@@ -84,14 +84,13 @@ export function useMemoSave({
         dispatch(actions.setTimestamps({ createTime: defaultCreateTime, updateTime: defaultCreateTime }));
       }
 
-      if (parentMemoName) {
-        posthog.capture("memo_comment_created");
-      } else if (memoName) {
-        posthog.capture("memo_updated");
-      } else {
-        posthog.capture("memo_created");
+      if (!memoName && !parentMemoName) {
         markNewMemo(result.memoName);
       }
+
+      posthog.capture(parentMemoName ? "memo_comment_created" : memoName ? "memo_updated" : "memo_created", {
+        memo_type: parentMemoName ? "comment" : "memo",
+      });
       onConfirm?.(result.memoName);
     } catch (error) {
       handleError(error, toast.error, {

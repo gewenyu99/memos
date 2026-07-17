@@ -1,6 +1,7 @@
 import { SearchIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { useMemoFilterContext } from "@/contexts/MemoFilterContext";
+import posthog from "@/lib/posthog";
 import { useTranslate } from "@/utils/i18n";
 import MemoDisplaySettingMenu from "./MemoDisplaySettingMenu";
 
@@ -26,6 +27,7 @@ const SearchBar = () => {
             value: word,
           });
         });
+        posthog.capture("memo_search_submitted", { query_word_count: words.length });
         setQueryText("");
       }
     }

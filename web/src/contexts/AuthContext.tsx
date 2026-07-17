@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { user: currentUser } = await authServiceClient.getCurrentUser({});
 
-      if (!currentUser?.name) {
+      if (!currentUser) {
         clearAccessToken();
         posthog.reset();
         setState(UNAUTHENTICATED_STATE);
@@ -106,8 +106,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       posthog.identify(currentUser.name, {
-        email: currentUser.email,
-        name: currentUser.displayName || currentUser.username,
+        ...(currentUser.email ? { email: currentUser.email } : {}),
+        ...(currentUser.displayName ? { name: currentUser.displayName } : {}),
+        role: currentUser.role,
       });
 
       const settings = await fetchUserSettings(currentUser.name);

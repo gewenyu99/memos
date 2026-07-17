@@ -10,7 +10,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import useLoading from "@/hooks/useLoading";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import { handleError } from "@/lib/error";
-import posthog from "@/lib/posthog";
 import { ROUTES } from "@/router/routes";
 import { useTranslate } from "@/utils/i18n";
 
@@ -50,7 +49,6 @@ function PasswordSignInForm({ redirectPath }: PasswordSignInFormProps) {
         setAccessToken(response.accessToken, response.accessTokenExpiresAt ? timestampDate(response.accessTokenExpiresAt) : undefined);
       }
       await initialize();
-      posthog.capture("user_signed_in", { authentication_method: "password" });
       navigateTo(redirectPath || ROUTES.HOME, { replace: true });
     } catch (error: unknown) {
       handleError(error, toast.error, {

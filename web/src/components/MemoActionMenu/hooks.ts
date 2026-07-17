@@ -70,7 +70,7 @@ export const useMemoActionHandlers = ({ memo, onEdit, setDeleteDialogOpen }: Use
         },
         updateMask: ["pinned"],
       });
-      posthog.capture("memo_pin_toggled", { is_pinned: !memo.pinned });
+      posthog.capture(memo.pinned ? "memo_unpinned" : "memo_pinned");
     } catch {
       // do nothing
     }
@@ -94,7 +94,7 @@ export const useMemoActionHandlers = ({ memo, onEdit, setDeleteDialogOpen }: Use
         updateMask: ["state"],
       });
       toast.success(message);
-      posthog.capture("memo_archive_toggled", { is_archived: isArchiving });
+      posthog.capture(isArchiving ? "memo_archived" : "memo_restored");
     } catch (error: unknown) {
       handleError(error, toast.error, {
         context: `${isArchiving ? "Archive" : "Restore"} memo`,
@@ -143,7 +143,7 @@ export const useMemoActionHandlers = ({ memo, onEdit, setDeleteDialogOpen }: Use
       return;
     }
     toast.success(t("message.deleted-successfully"));
-    posthog.capture("memo_deleted", { is_comment: Boolean(memo.parent) });
+    posthog.capture("memo_deleted", { memo_type: memo.parent ? "comment" : "memo" });
     if (memo.parent) {
       queryClient.invalidateQueries({ queryKey: memoKeys.comments(memo.parent) });
     }

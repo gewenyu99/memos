@@ -1,6 +1,7 @@
 import { create } from "@bufbuild/protobuf";
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { InfoIcon, LoaderIcon, LockIcon, SparklesIcon, UserRoundXIcon } from "lucide-react";
+import posthog from "posthog-js";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useSearchParams } from "react-router-dom";
@@ -73,6 +74,7 @@ const SignUp = () => {
       }
       // Refresh auth context to load the current user
       await initAuth();
+      posthog.capture("user_signed_up", { method: "password", is_admin_setup: needsSetup });
       // Refetch instance profile to update the initialized status
       await initInstance();
       navigateTo(redirectTarget || ROUTES.HOME, { replace: true });

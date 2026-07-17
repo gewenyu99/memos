@@ -9,6 +9,7 @@ import {
   SquareUserIcon,
   User2Icon,
 } from "lucide-react";
+import posthog from "posthog-js";
 import { useAuth } from "@/contexts/AuthContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { useSSEConnectionStatus } from "@/hooks/useLiveMemoRefresh";
@@ -77,6 +78,7 @@ const UserMenu = (props: Props) => {
   };
 
   const handleSignOut = async () => {
+    posthog.capture("user_signed_out");
     // First, clear auth state and cache BEFORE doing anything else
     await logout();
 

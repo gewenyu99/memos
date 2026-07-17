@@ -1,4 +1,5 @@
 import { timestampDate } from "@bufbuild/protobuf/wkt";
+import posthog from "posthog-js";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { setAccessToken } from "@/auth-state";
@@ -112,6 +113,9 @@ const AuthCallback = () => {
           if (response.accessToken) {
             setAccessToken(response.accessToken, response.accessTokenExpiresAt ? timestampDate(response.accessTokenExpiresAt) : undefined);
           }
+        }
+        if (flowMode !== "link") {
+          posthog.capture("user_signed_in_sso", { identity_provider: identityProviderName });
         }
         setState({
           loading: false,

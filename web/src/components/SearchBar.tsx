@@ -1,4 +1,5 @@
 import { SearchIcon } from "lucide-react";
+import posthog from "posthog-js";
 import { useRef, useState } from "react";
 import { useMemoFilterContext } from "@/contexts/MemoFilterContext";
 import { useTranslate } from "@/utils/i18n";
@@ -20,6 +21,7 @@ const SearchBar = () => {
       const trimmedText = queryText.trim();
       if (trimmedText !== "") {
         const words = trimmedText.split(/\s+/);
+        posthog.capture("memo_searched", { query_word_count: words.length });
         words.forEach((word) => {
           addFilter({
             factor: "contentSearch",

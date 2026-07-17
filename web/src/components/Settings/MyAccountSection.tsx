@@ -1,4 +1,5 @@
 import { AlertTriangleIcon, KeyRoundIcon, PenLineIcon } from "lucide-react";
+import posthog from "posthog-js";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -34,6 +35,7 @@ const MyAccountSection = () => {
     }
     try {
       await userServiceClient.deleteUser({ name: user.name });
+      posthog.capture("account_deleted");
       await logout();
       toast.success(t("setting.member.delete-success", { username: user.username }));
       navigateTo(ROUTES.AUTH, { replace: true });

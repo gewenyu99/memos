@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import posthog from "posthog-js";
 import { useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { useNewMemo } from "@/contexts/NewMemoContext";
@@ -72,6 +73,12 @@ export function useMemoSave({
         invalidationPromises.push(queryClient.invalidateQueries({ queryKey: memoKeys.comments(parentMemoName) }));
       }
       await Promise.all(invalidationPromises);
+
+      if (memoName) {
+        posthog.capture("memo_updated");
+      } else {
+        posthog.capture("memo_created", { is_comment: !!parentMemoName });
+      }
 
       dispatch(actions.reset());
       if (!memoName && defaultVisibility) {

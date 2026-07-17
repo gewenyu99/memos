@@ -1,5 +1,6 @@
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { LoaderIcon } from "lucide-react";
+import posthog from "posthog-js";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { setAccessToken } from "@/auth-state";
@@ -49,6 +50,7 @@ function PasswordSignInForm({ redirectPath }: PasswordSignInFormProps) {
         setAccessToken(response.accessToken, response.accessTokenExpiresAt ? timestampDate(response.accessTokenExpiresAt) : undefined);
       }
       await initialize();
+      posthog.capture("user_signed_in", { method: "password" });
       navigateTo(redirectPath || ROUTES.HOME, { replace: true });
     } catch (error: unknown) {
       handleError(error, toast.error, {

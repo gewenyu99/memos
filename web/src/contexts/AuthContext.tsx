@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import posthog from "posthog-js";
 import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import { clearAccessToken, getAccessToken } from "@/auth-state";
 import { authServiceClient, refreshAccessToken, shortcutServiceClient, userServiceClient } from "@/connect";
@@ -10,6 +11,7 @@ import type {
   UserSetting_TagsSetting,
   UserSetting_WebhooksSetting,
 } from "@/types/proto/api/v1/user_service_pb";
+import { User_Role } from "@/types/proto/api/v1/user_service_pb";
 
 interface AuthState {
   currentUser: User | undefined;
@@ -111,6 +113,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading: false,
       });
 
+      posthog.identify(currentUser.name, {
+        username: currentUser.username,
+        display_name: currentUser.displayName,
+        role: User_Role[currentUser.role],
+      });
+
       // Pre-populate React Query cache
       queryClient.setQueryData(userKeys.currentUser(), currentUser);
       queryClient.setQueryData(userKeys.detail(currentUser.name), currentUser);
@@ -127,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("[AuthContext] Failed to sign out:", error);
     } finally {
+      posthog.reset();
       clearAccessToken();
       setState(UNAUTHENTICATED_STATE);
       queryClient.clear();

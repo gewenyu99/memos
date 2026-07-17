@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import copy from "copy-to-clipboard";
+import posthog from "posthog-js";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 import { useLocation } from "react-router-dom";
@@ -69,6 +70,7 @@ export const useMemoActionHandlers = ({ memo, onEdit, setDeleteDialogOpen }: Use
         },
         updateMask: ["pinned"],
       });
+      posthog.capture("memo_pinned", { pinned: !memo.pinned });
     } catch {
       // do nothing
     }
@@ -91,6 +93,7 @@ export const useMemoActionHandlers = ({ memo, onEdit, setDeleteDialogOpen }: Use
         },
         updateMask: ["state"],
       });
+      posthog.capture(isArchiving ? "memo_archived" : "memo_restored");
       toast.success(message);
     } catch (error: unknown) {
       handleError(error, toast.error, {
@@ -139,6 +142,7 @@ export const useMemoActionHandlers = ({ memo, onEdit, setDeleteDialogOpen }: Use
       handleError(error, toast.error, { context: "Delete memo", fallbackMessage: "An error occurred" });
       return;
     }
+    posthog.capture("memo_deleted");
     toast.success(t("message.deleted-successfully"));
     if (memo.parent) {
       queryClient.invalidateQueries({ queryKey: memoKeys.comments(memo.parent) });

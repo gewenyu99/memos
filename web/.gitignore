@@ -6,3 +6,4 @@ dist-ssr
 *.local
 src/types/proto/store
 .env
+web/node_modules/

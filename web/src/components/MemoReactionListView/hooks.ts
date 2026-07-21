@@ -4,7 +4,6 @@ import { memoServiceClient } from "@/connect";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { memoKeys } from "@/hooks/useMemoQueries";
 import { useUsersByNames } from "@/hooks/useUserQueries";
-import posthog from "@/lib/posthog";
 import type { Memo, Reaction } from "@/types/proto/api/v1/memo_service_pb";
 import type { User } from "@/types/proto/api/v1/user_service_pb";
 
@@ -45,8 +44,7 @@ export const useReactionActions = ({ memo, onComplete }: UseReactionActionsOptio
     if (!currentUser) return;
 
     try {
-      const removingReaction = hasReacted(reactionType);
-      if (removingReaction) {
+      if (hasReacted(reactionType)) {
         const reactions = memo.reactions.filter(
           (reaction) => reaction.reactionType === reactionType && reaction.creator === currentUser.name,
         );
@@ -57,10 +55,6 @@ export const useReactionActions = ({ memo, onComplete }: UseReactionActionsOptio
           reaction: { contentId: memo.name, reactionType },
         });
       }
-      posthog.capture(removingReaction ? "memo_reaction_removed" : "memo_reaction_added", {
-        memo_type: memo.parent ? "comment" : "memo",
-        reaction_type: reactionType,
-      });
       // Refetch the memo to get updated reactions and invalidate cache
       const updatedMemo = await memoServiceClient.getMemo({ name: memo.name });
       queryClient.setQueryData(memoKeys.detail(memo.name), updatedMemo);

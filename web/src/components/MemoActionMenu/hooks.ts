@@ -8,7 +8,6 @@ import { memoKeys, useDeleteMemo, useUpdateMemo } from "@/hooks/useMemoQueries";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import { userKeys } from "@/hooks/useUserQueries";
 import { handleError } from "@/lib/error";
-import posthog from "@/lib/posthog";
 import { ROUTES } from "@/router/routes";
 import { State } from "@/types/proto/api/v1/common_pb";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
@@ -70,7 +69,6 @@ export const useMemoActionHandlers = ({ memo, onEdit, setDeleteDialogOpen }: Use
         },
         updateMask: ["pinned"],
       });
-      posthog.capture(memo.pinned ? "memo_unpinned" : "memo_pinned");
     } catch {
       // do nothing
     }
@@ -94,7 +92,6 @@ export const useMemoActionHandlers = ({ memo, onEdit, setDeleteDialogOpen }: Use
         updateMask: ["state"],
       });
       toast.success(message);
-      posthog.capture(isArchiving ? "memo_archived" : "memo_restored");
     } catch (error: unknown) {
       handleError(error, toast.error, {
         context: `${isArchiving ? "Archive" : "Restore"} memo`,
@@ -143,7 +140,6 @@ export const useMemoActionHandlers = ({ memo, onEdit, setDeleteDialogOpen }: Use
       return;
     }
     toast.success(t("message.deleted-successfully"));
-    posthog.capture("memo_deleted", { memo_type: memo.parent ? "comment" : "memo" });
     if (memo.parent) {
       queryClient.invalidateQueries({ queryKey: memoKeys.comments(memo.parent) });
     }

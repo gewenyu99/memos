@@ -1,0 +1,31 @@
+@@ -3,6 +3,7 @@
+ import { clearAccessToken, getAccessToken } from "@/auth-state";
+ import { authServiceClient, refreshAccessToken, shortcutServiceClient, userServiceClient } from "@/connect";
+ import { userKeys } from "@/hooks/useUserQueries";
++import posthog from "@/lib/posthog";
+ import type { Shortcut } from "@/types/proto/api/v1/shortcut_service_pb";
+ import type {
+   User,
+@@ -104,6 +105,14 @@
+ 
+       const settings = await fetchUserSettings(currentUser.name);
+ 
++      if (currentUser.name) {
++        posthog.identify(currentUser.name, {
++          email: currentUser.email || undefined,
++          name: currentUser.displayName || undefined,
++          role: currentUser.role,
++        });
++      }
++
+       setState({
+         currentUser,
+         ...settings,
+@@ -127,6 +136,7 @@
+     } catch (error) {
+       console.error("[AuthContext] Failed to sign out:", error);
+     } finally {
++      posthog.reset();
+       clearAccessToken();
+       setState(UNAUTHENTICATED_STATE);
+       queryClient.clear();

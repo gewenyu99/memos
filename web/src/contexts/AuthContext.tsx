@@ -3,7 +3,6 @@ import { createContext, type ReactNode, useCallback, useContext, useMemo, useSta
 import { clearAccessToken, getAccessToken } from "@/auth-state";
 import { authServiceClient, refreshAccessToken, shortcutServiceClient, userServiceClient } from "@/connect";
 import { userKeys } from "@/hooks/useUserQueries";
-import posthog from "@/lib/posthog";
 import type { Shortcut } from "@/types/proto/api/v1/shortcut_service_pb";
 import type {
   User,
@@ -90,7 +89,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // If we still don't have a token after refresh attempt, skip getCurrentUser call
     // to avoid unnecessary network request for unauthenticated users.
     if (!getAccessToken()) {
-      posthog.reset();
       setState(UNAUTHENTICATED_STATE);
       return;
     }
@@ -100,16 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!currentUser) {
         clearAccessToken();
-        posthog.reset();
         setState(UNAUTHENTICATED_STATE);
         return;
       }
-
-      posthog.identify(currentUser.name, {
-        ...(currentUser.email ? { email: currentUser.email } : {}),
-        ...(currentUser.displayName ? { name: currentUser.displayName } : {}),
-        role: currentUser.role,
-      });
 
       const settings = await fetchUserSettings(currentUser.name);
 
@@ -126,7 +117,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Failed to initialize auth:", error);
       clearAccessToken();
-      posthog.reset();
       setState(UNAUTHENTICATED_STATE);
     }
   }, [fetchUserSettings, queryClient]);
@@ -138,7 +128,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("[AuthContext] Failed to sign out:", error);
     } finally {
       clearAccessToken();
-      posthog.reset();
       setState(UNAUTHENTICATED_STATE);
       queryClient.clear();
     }

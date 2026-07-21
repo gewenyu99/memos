@@ -14,6 +14,7 @@ import useCurrentUser from "@/hooks/useCurrentUser";
 import { useDialog } from "@/hooks/useDialog";
 import { useDeleteUser, useListUsers } from "@/hooks/useUserQueries";
 import { handleError } from "@/lib/error";
+import posthog from "@/lib/posthog";
 import { State } from "@/types/proto/api/v1/common_pb";
 import { User, User_Role } from "@/types/proto/api/v1/user_service_pb";
 import { useTranslate } from "@/utils/i18n";
@@ -62,6 +63,7 @@ const MemberSection = () => {
         updateMask: create(FieldMaskSchema, { paths: ["state"] }),
       });
       toast.success(t("setting.member.archive-success", { username }));
+      posthog.capture("member_archived");
       await refetchUsers();
     } catch (error: unknown) {
       handleError(error, toast.error, { context: "Archive user" });
@@ -95,6 +97,7 @@ const MemberSection = () => {
     const { username, name } = deleteTarget;
     deleteUserMutation.mutate(name, {
       onSuccess: () => {
+        posthog.capture("member_deleted");
         setDeleteTarget(undefined);
         toast.success(t("setting.member.delete-success", { username }));
       },

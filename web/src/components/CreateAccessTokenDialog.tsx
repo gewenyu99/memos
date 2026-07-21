@@ -11,6 +11,7 @@ import { userServiceClient } from "@/connect";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import useLoading from "@/hooks/useLoading";
 import { handleError } from "@/lib/error";
+import posthog from "@/lib/posthog";
 import { CreatePersonalAccessTokenResponse } from "@/types/proto/api/v1/user_service_pb";
 import { useTranslate } from "@/utils/i18n";
 
@@ -85,6 +86,7 @@ function CreateAccessTokenDialog({ open, onOpenChange, onSuccess }: Props) {
       });
 
       requestState.setFinish();
+      posthog.capture("access_token_created", { expiration_days: state.expiration });
       onSuccess(response);
       if (response.token) {
         setCreatedToken(response.token);

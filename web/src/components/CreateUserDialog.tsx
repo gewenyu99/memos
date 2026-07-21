@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { userServiceClient } from "@/connect";
 import useLoading from "@/hooks/useLoading";
 import { handleError } from "@/lib/error";
+import posthog from "@/lib/posthog";
 import { User, User_Role, UserSchema } from "@/types/proto/api/v1/user_service_pb";
 import { useTranslate } from "@/utils/i18n";
 
@@ -53,6 +54,7 @@ function CreateUserDialog({ open, onOpenChange, user: initialUser, onSuccess }: 
       requestState.setLoading();
       if (isCreating) {
         await userServiceClient.createUser({ user });
+        posthog.capture("member_created", { role: user.role === User_Role.ADMIN ? "admin" : "member" });
         toast.success("Create user successfully");
       } else {
         const updateMask = [];

@@ -5,6 +5,7 @@ import { useNewMemo } from "@/contexts/NewMemoContext";
 import { memoKeys } from "@/hooks/useMemoQueries";
 import { userKeys } from "@/hooks/useUserQueries";
 import { handleError } from "@/lib/error";
+import posthog from "@/lib/posthog";
 import type { Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import { errorService, memoService, validationService } from "../services";
@@ -56,6 +57,18 @@ export function useMemoSave({
         toast.error(t("editor.no-changes-detected"));
         onCancel?.();
         return;
+      }
+
+      const properties = {
+        has_attachments: state.localFiles.length > 0,
+        visibility: state.metadata.visibility,
+      };
+      if (parentMemoName) {
+        posthog.capture("memo_comment_created", properties);
+      } else if (memoName) {
+        posthog.capture("memo_updated", properties);
+      } else {
+        posthog.capture("memo_created", properties);
       }
 
       // Prevent the autosave unmount flush from restoring the saved draft.

@@ -5,6 +5,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { userServiceClient } from "@/connect";
 import useCurrentUser from "@/hooks/useCurrentUser";
+import posthog from "@/lib/posthog";
 import { UserWebhook } from "@/types/proto/api/v1/user_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import CreateWebhookDialog from "../CreateWebhookDialog";
@@ -57,6 +58,7 @@ const WebhookSection = () => {
   const confirmDeleteWebhook = async () => {
     if (!deleteTarget) return;
     await userServiceClient.deleteUserWebhook({ name: deleteTarget.name });
+    posthog.capture("webhook_deleted");
     setWebhooks((prev) => prev.filter((item) => item.name !== deleteTarget.name));
     const name = deleteTarget.displayName;
     setDeleteTarget(undefined);
